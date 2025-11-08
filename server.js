@@ -6,6 +6,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const accountsRoutes = require("./routes/account.routes");
 const subjectRoutes = require("./routes/subject.routes")
+const teacherRoutes = require("./routes/teacher.routes");
+const adminRoutes = require("./routes/admin.routes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -44,6 +46,8 @@ app.get('/', (req, res) => {
 
 app.use("/api/accounts", accountsRoutes);
 app.use("/api/subjects", subjectRoutes);
+app.use("/api/teachers", teacherRoutes);
+app.use("/api/admins", adminRoutes);
 
 // Error handler (always last)
 app.use(errorHandler);
