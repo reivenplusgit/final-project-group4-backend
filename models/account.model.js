@@ -9,7 +9,7 @@ const accountSchema = new mongoose.Schema({
   lastname: { type: String, required: true },
   photo: { type: String, default: '' },
   user_type: { type: String, enum: ['Student','Teacher','Admin'], default: 'Student' },
-  department: { type: String, enum: ['IS','CCS','COE', 'COS'], default: 'IS' },
+  department: { type: String, default: '' },
   date_created: { type: Date, default: Date.now },
   last_login: { type: Date, default: null },
   status: { type: String, enum: ['Active','Inactive','Banned'], default: 'Active' }

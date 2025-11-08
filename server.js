@@ -8,6 +8,8 @@ const accountsRoutes = require("./routes/account.routes");
 const subjectRoutes = require("./routes/subject.routes")
 const teacherRoutes = require("./routes/teacher.routes");
 const adminRoutes = require("./routes/admin.routes");
+const authRoutes = require('./routes/auth.routes');
+const gradeRoutes = require("./routes/grade.routes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -17,7 +19,7 @@ const app = express();
 // Middlewares
 // Middlewares
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
@@ -44,10 +46,13 @@ app.get('/', (req, res) => {
   res.json({ message: "MIE Student Portal Backend is running!" });
 });
 
+
+app.use('/api/auth', authRoutes);
 app.use("/api/accounts", accountsRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/teachers", teacherRoutes);
 app.use("/api/admins", adminRoutes);
+app.use("/api/grades", gradeRoutes);
 
 // Error handler (always last)
 app.use(errorHandler);
