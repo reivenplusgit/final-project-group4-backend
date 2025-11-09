@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Subject = require("../models/subject.model.js");
 
-getSubjects = async (req, res) => {
+const getSubjects = async (req, res) => {
   try {
     const subjects = await Subject.find({});
     res
@@ -13,7 +13,7 @@ getSubjects = async (req, res) => {
   }
 };
 
-getSubject = async (req, res) => {
+const getSubject = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
