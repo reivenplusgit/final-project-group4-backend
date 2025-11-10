@@ -12,15 +12,18 @@ const authRoutes = require('./routes/auth.routes');
 const gradeRoutes = require("./routes/grade.routes");
 const errorHandler = require("./middleware/errorHandler");
 const scheduleRoutes = require("./routes/schedule.routes");
-
 const app = express();
+
+const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173'];
 
 // Connect DB
 
 // Middlewares
-// Middlewares
 app.use(helmet());
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: (origin, callback) => {
+  if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+  else callback(new Error('Not allowed by CORS'));
+} }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
