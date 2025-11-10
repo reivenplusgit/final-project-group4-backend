@@ -2,9 +2,13 @@ const mongoose = require("mongoose");
 
 const scheduleSchema = new mongoose.Schema(
   {
+    student_ref: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
+      required: true,
+    },
     student_number: {
       type: String,
-      ref: "Student",
       required: true,
     },
     semester: { type: String, required: true },
@@ -16,9 +20,13 @@ const scheduleSchema = new mongoose.Schema(
           ref: "Teacher",
           required: true,
         },
+        subject_ref: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Subject",
+          required: true,
+        },
         course_code: {
           type: String,
-          ref: "Subject",
           required: true,
         },
         room: { type: String, required: true },
