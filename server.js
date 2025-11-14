@@ -10,20 +10,24 @@ const teacherRoutes = require("./routes/teacher.routes");
 const adminRoutes = require("./routes/admin.routes");
 const authRoutes = require('./routes/auth.routes');
 const gradeRoutes = require("./routes/grade.routes");
+const disciplinaryRoutes = require("./routes/disciplinary.routes");
 const errorHandler = require("./middleware/errorHandler");
 const scheduleRoutes = require("./routes/schedule.routes");
 const app = express();
 
-const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173'];
+const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173', 'http://[::1]:5173/'];
 
 // Connect DB
 
 // Middlewares
-app.use(helmet());
+
 app.use(cors({ origin: (origin, callback) => {
   if (!origin || allowedOrigins.includes(origin)) callback(null, true);
   else callback(new Error('Not allowed by CORS'));
 } }));
+
+
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
@@ -58,6 +62,8 @@ app.use("/api/teachers", teacherRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/grades", gradeRoutes);
 app.use("/api/schedules", scheduleRoutes);
+app.use("/api/disciplinary", disciplinaryRoutes);
+
 
 // Error handler (always last)
 app.use(errorHandler);
