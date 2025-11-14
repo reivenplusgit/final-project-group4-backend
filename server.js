@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const accountsRoutes = require("./routes/account.routes");
 const subjectRoutes = require("./routes/subject.routes")
+const studentRoutes = require("./routes/student.routes");
 const teacherRoutes = require("./routes/teacher.routes");
 const adminRoutes = require("./routes/admin.routes");
 const authRoutes = require('./routes/auth.routes');
@@ -62,8 +63,6 @@ app.use("/api/teachers", teacherRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/grades", gradeRoutes);
 app.use("/api/schedules", scheduleRoutes);
-app.use("/api/disciplinary", disciplinaryRoutes);
-
 
 // Error handler (always last)
 app.use(errorHandler);
