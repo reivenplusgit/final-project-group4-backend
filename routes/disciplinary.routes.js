@@ -1,4 +1,6 @@
 const express = require("express");
+const router = express.Router();
+
 const {
   getRecords,
   getRecord,
@@ -6,8 +8,6 @@ const {
   editRecord,
   deleteRecords,
 } = require("../controllers/disciplinary.controller");
-
-const router = express.Router();
 
 router.get("/", getRecords);
 router.get("/:id", getRecord);

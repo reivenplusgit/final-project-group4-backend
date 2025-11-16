@@ -11,9 +11,9 @@ const teacherRoutes = require("./routes/teacher.routes");
 const adminRoutes = require("./routes/admin.routes");
 const authRoutes = require('./routes/auth.routes');
 const gradeRoutes = require("./routes/grade.routes");
-const disciplinaryRoutes = require("./routes/disciplinary.routes");
 const errorHandler = require("./middleware/errorHandler");
 const scheduleRoutes = require("./routes/schedule.routes");
+const disciplinaryRoutes = require("./routes/disciplinary.routes");
 const reportRoutes = require("./routes/reports.routes")
 const app = express();
 
@@ -64,7 +64,8 @@ app.use("/api/teachers", teacherRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/grades", gradeRoutes);
 app.use("/api/schedules", scheduleRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/disciplinary", disciplinaryRoutes);
 app.use("/api/reports", reportRoutes);
-
 // Error handler (always last)
 app.use(errorHandler);
