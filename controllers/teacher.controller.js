@@ -4,14 +4,19 @@ const mongoose = require("mongoose");
 // ✅ Get all teachers
 const getTeachers = async (req, res) => {
   try {
-    const teachers = await Teacher.find().populate("account_ref", "firstname lastname email department user_type");
+    const teachers = await Teacher.find().populate(
+      "account_ref",
+      "firstname lastname email department user_type"
+    );
     res.status(200).json({
       message: "Teachers retrieved successfully!",
       count: teachers.length,
       data: teachers,
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to retrieve teachers", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve teachers", error: error.message });
   }
 };
 
@@ -22,12 +27,19 @@ const getTeacher = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({ message: "Invalid Teacher ID" });
 
-    const teacher = await Teacher.findById(id).populate("account_ref", "firstname lastname email department user_type");
+    const teacher = await Teacher.findById(id).populate(
+      "account_ref",
+      "firstname lastname email department user_type"
+    );
     if (!teacher) return res.status(404).json({ message: "Teacher not found" });
 
-    res.status(200).json({ message: "Teacher retrieved successfully!", data: teacher });
+    res
+      .status(200)
+      .json({ message: "Teacher retrieved successfully!", data: teacher });
   } catch (error) {
-    res.status(500).json({ message: "Failed to retrieve teacher", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve teacher", error: error.message });
   }
 };
 
@@ -48,9 +60,13 @@ const createTeacher = async (req, res) => {
     });
 
     await newTeacher.save();
-    res.status(201).json({ message: "Teacher created successfully!", data: newTeacher });
+    res
+      .status(201)
+      .json({ message: "Teacher created successfully!", data: newTeacher });
   } catch (error) {
-    res.status(500).json({ message: "Failed to create teacher", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to create teacher", error: error.message });
   }
 };
 
@@ -61,13 +77,19 @@ const updateTeacher = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({ message: "Invalid Teacher ID" });
 
-    const updatedTeacher = await Teacher.findByIdAndUpdate(id, req.body, { new: true });
+    const updatedTeacher = await Teacher.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
     if (!updatedTeacher)
       return res.status(404).json({ message: "Teacher not found" });
 
-    res.status(200).json({ message: "Teacher updated successfully!", data: updatedTeacher });
+    res
+      .status(200)
+      .json({ message: "Teacher updated successfully!", data: updatedTeacher });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update teacher", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update teacher", error: error.message });
   }
 };
 
@@ -84,7 +106,30 @@ const deleteTeacher = async (req, res) => {
 
     res.status(200).json({ message: "Teacher deleted successfully!" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete teacher", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to delete teacher", error: error.message });
+  }
+};
+
+const getTeacherByAccID = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id))
+      return res.status(400).json({ message: "Invalid Account ID" });
+
+    const teacher = await Teacher.findOne({
+      account_ref: new mongoose.Types.ObjectId(id),
+    }).populate("subjects.subject_id", "subject_name")
+    if (!teacher) return res.status(404).json({ message: "Teacher not found" });
+
+    res
+      .status(200)
+      .json({ message: "Teacher retrieved successfully!", data: teacher });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve teacher", error: error.message });
   }
 };
 
@@ -94,4 +139,5 @@ module.exports = {
   createTeacher,
   updateTeacher,
   deleteTeacher,
+  getTeacherByAccID,
 };
