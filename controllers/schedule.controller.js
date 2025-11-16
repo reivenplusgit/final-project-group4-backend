@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Schedule = require("../models/schedule.model.js");
 require("../models/student.model.js");
 require("../models/teacher.model.js");
@@ -36,6 +37,101 @@ const getSchedules = async (req, res) => {
   }
 };
 
+const getStudentsBySubjAndTeacherID = async (req, res) => {
+  try {
+    const { subjId, teacherId } = req.params;
+    if (
+      !mongoose.Types.ObjectId.isValid(subjId) ||
+      !mongoose.Types.ObjectId.isValid(teacherId)
+    )
+      return res.status(400).json({ message: "Invalid IDs" });
 
+    const matches = await Schedule.aggregate([
+      // 1. Filter schedules
+      {
+        $match: {
+          schedules: {
+            $elemMatch: {
+              teacher_ref: new mongoose.Types.ObjectId(teacherId),
+              subject_ref: new mongoose.Types.ObjectId(subjId),
+            },
+          },
+        },
+      },
 
-module.exports = { getSchedules};
+      // 2. Join Student
+      {
+        $lookup: {
+          from: "students",
+          localField: "student_ref",
+          foreignField: "_id",
+          as: "student",
+        },
+      },
+      { $unwind: "$student" },
+
+      // 3. Join Account
+      {
+        $lookup: {
+          from: "accounts",
+          localField: "student.accounts_ref",
+          foreignField: "_id",
+          as: "account",
+        },
+      },
+      { $unwind: "$account" },
+
+      // 4. Extract only needed fields, attach student._id as identity
+      {
+        $project: {
+          _id: "$student._id",
+          student_number: "$student.student_number",
+          firstname: "$account.firstname",
+          lastname: "$account.lastname",
+          photo: "$account.photo",
+          course: "$student.course",
+          phone: "$student.phone",
+        },
+      },
+
+      // 5. Deduplicate by student ID
+      {
+        $group: {
+          _id: "$_id",
+          student_number: { $first: "$student_number" },
+          firstname: { $first: "$firstname" },
+          lastname: { $first: "$lastname" },
+          photo: { $first: "$photo" },
+          course: {$first: "$course"},
+          phone: { $first: "$phone"}
+        },
+      },
+
+      // 6. Format output
+      {
+        $project: {
+          _id: 1,
+          student_number: 1,
+          firstname: 1,
+          lastname: 1,
+          photo: 1,
+          course: 1,
+          phone: 1,
+        },
+      },
+    ]);
+
+    if (matches.length === 0)
+      return res.status(404).json({ message: "404: No students found with your ID and subject ID!" });
+
+    res
+      .status(200)
+      .json({ message: "Students retrieved successfully!", data: matches });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve Students", error: error.message });
+  }
+};
+
+module.exports = { getSchedules, getStudentsBySubjAndTeacherID };

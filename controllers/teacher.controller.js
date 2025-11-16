@@ -120,7 +120,7 @@ const getTeacherByAccID = async (req, res) => {
 
     const teacher = await Teacher.findOne({
       account_ref: new mongoose.Types.ObjectId(id),
-    }).populate("subjects.subject_id", "subject_name")
+    }).populate("subjects.subject_id", "subject_name units code")
     if (!teacher) return res.status(404).json({ message: "Teacher not found" });
 
     res
