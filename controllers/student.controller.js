@@ -1,7 +1,8 @@
 const Student = require("../models/student.model");
 const mongoose = require("mongoose");
 
-const populateFields = "firstname lastname email department user_type";
+const populateFields = "firstname lastname email photo department user_type";
+
 const populate = { path: "accounts_ref", select: populateFields };
 
 const sendError = (res, message, error, code = 500) =>
