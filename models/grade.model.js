@@ -12,6 +12,13 @@ const gradeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
+    student_ref: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
+      required: true,
+    },
+
     semester: {
       type: Number,
       required: true,
@@ -21,6 +28,7 @@ const gradeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
     grades: [
       {
         teacher_ref: {

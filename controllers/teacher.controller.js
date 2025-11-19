@@ -133,9 +133,9 @@ const hasScheduleConflict = (subjects) => {
 const getTeachers = async (req, res) => {
   try {
     const teachers = await Teacher.find().populate(
-      "account_ref",
-      "firstname lastname email department user_type photo"
-    );
+      "account_ref", "firstname lastname email department user_type photo"
+    )
+    .populate("subjects.subject_id", "code subject_name units year_level semester department");
     res.status(200).json({
       message: "Teachers retrieved successfully!",
       count: teachers.length,
@@ -147,6 +147,7 @@ const getTeachers = async (req, res) => {
       .json({ message: "Failed to retrieve teachers", error: error.message });
   }
 };
+
 
 // ✅ Get one teacher
 const getTeacher = async (req, res) => {
@@ -272,24 +273,39 @@ const deleteTeacher = async (req, res) => {
   }
 };
 
+// teacher.controller.js → getTeacherByAccID
+// teacher.controller.js
+// teacher.controller.js → getTeacherByAccID
 const getTeacherByAccID = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id))
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid Account ID" });
+    }
 
-    const teacher = await Teacher.findOne({
-      account_ref: new mongoose.Types.ObjectId(id),
-    }).populate("subjects.subject_id", "subject_name units code")
-    if (!teacher) return res.status(404).json({ message: "Teacher not found" });
+    const teacher = await Teacher.findOne({ account_ref: id })
+      .populate("account_ref", "firstname lastname email")
+      .populate({
+        path: "subjects.subject_id",        // This is the correct path
+        select: "code subject_name department units",
+        model: "Subject"
+      });
 
-    res
-      .status(200)
-      .json({ message: "Teacher retrieved successfully!", data: teacher });
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher not found" });
+    }
+
+    // OPTIONAL: Log to confirm data is populated
+    console.log("Teacher loaded:", teacher.fullName, "Classes:", teacher.subjects.length);
+
+    res.status(200).json({
+      message: "Teacher retrieved successfully!",
+      data: teacher,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to retrieve teacher", error: error.message });
+    console.error("Error in getTeacherByAccID:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 

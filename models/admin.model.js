@@ -15,12 +15,13 @@ const adminSchema = new mongoose.Schema(
     },
     admin_level: {
       type: String,
-      enum: ["sys_admin", "department_admin"], // extend if needed
+      enum: ["department_admin"], // Removed sys_admin
       required: true,
+      default: "department_admin",
     },
     department: {
       type: String,
-      enum: ["IS", "CCS", "COE", "COS", "System"],
+      enum: ["IS", "CCS", "COE", "COS"], // Removed System
       required: true,
     },
   },

@@ -1,10 +1,9 @@
 const mongoose = require("mongoose");
 const Schedule = require("../models/schedule.model.js");
-require("../models/student.model.js");
-require("../models/teacher.model.js");
-require("../models/subject.model.js");
-const Account = require("../models/account.model.js");  // added by WJG
 const Student = require("../models/student.model.js");
+const Teacher = require("../models/teacher.model.js");
+const Subject = require("../models/subject.model.js");
+const Account = require("../models/account.model.js");  // added by WJG
 const bcrypt = require("bcryptjs");
 
 const getSchedules = async (req, res) => {
