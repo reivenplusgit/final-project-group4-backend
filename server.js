@@ -69,5 +69,5 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/disciplinary", disciplinaryRoutes);
 
 
-// Error handler (always last)
+// Error handler (always last to run)
 app.use(errorHandler);
