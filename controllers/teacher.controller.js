@@ -5,9 +5,9 @@ const mongoose = require("mongoose");
 const getTeachers = async (req, res) => {
   try {
     const teachers = await Teacher.find().populate(
-      "account_ref",
-      "firstname lastname email department user_type"
-    );
+      "account_ref", "firstname lastname email department user_type"
+    )
+    .populate("subjects.subject_id", "code subject_name units year_level semester department");
     res.status(200).json({
       message: "Teachers retrieved successfully!",
       count: teachers.length,
@@ -19,6 +19,7 @@ const getTeachers = async (req, res) => {
       .json({ message: "Failed to retrieve teachers", error: error.message });
   }
 };
+
 
 // ✅ Get one teacher
 const getTeacher = async (req, res) => {
