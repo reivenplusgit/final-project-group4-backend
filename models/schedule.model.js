@@ -11,14 +11,16 @@ const scheduleSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    semester: { type: String, required: true },
-    acad_year: { type: String, required: true },
+    // ensures numerical values for easier filtering/sorting
+    semester: { type: Number, required: true },   // 1 or 2
+    acad_year: { type: Number, required: true },  // 1–4
+
     schedules: [
       {
         teacher_ref: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Teacher",
-          required: true,
+          default: null, // allow unassigned
         },
         subject_ref: {
           type: mongoose.Schema.Types.ObjectId,

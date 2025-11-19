@@ -17,7 +17,7 @@ const disciplinaryRoutes = require("./routes/disciplinary.routes");
 const reportRoutes = require("./routes/reports.routes")
 const app = express();
 
-const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173', 'http://[::1]:5173/'];
+const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173', 'http://[::1]:5173/', "https://hoppscotch.io"];
 
 // Connect DB
 
