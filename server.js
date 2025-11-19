@@ -6,24 +6,30 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const accountsRoutes = require("./routes/account.routes");
 const subjectRoutes = require("./routes/subject.routes")
+const studentRoutes = require("./routes/student.routes");
 const teacherRoutes = require("./routes/teacher.routes");
 const adminRoutes = require("./routes/admin.routes");
 const authRoutes = require('./routes/auth.routes');
 const gradeRoutes = require("./routes/grade.routes");
 const errorHandler = require("./middleware/errorHandler");
 const scheduleRoutes = require("./routes/schedule.routes");
+const disciplinaryRoutes = require("./routes/disciplinary.routes");
+const reportRoutes = require("./routes/reports.routes")
 const app = express();
 
-const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173'];
+const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173', 'http://[::1]:5173/', "https://hoppscotch.io"];
 
 // Connect DB
 
 // Middlewares
-app.use(helmet());
+
 app.use(cors({ origin: (origin, callback) => {
   if (!origin || allowedOrigins.includes(origin)) callback(null, true);
   else callback(new Error('Not allowed by CORS'));
 } }));
+
+
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
@@ -58,6 +64,8 @@ app.use("/api/teachers", teacherRoutes);
 app.use("/api/admins", adminRoutes);
 app.use("/api/grades", gradeRoutes);
 app.use("/api/schedules", scheduleRoutes);
-
+app.use("/api/students", studentRoutes);
+app.use("/api/disciplinary", disciplinaryRoutes);
+app.use("/api/reports", reportRoutes);
 // Error handler (always last)
 app.use(errorHandler);

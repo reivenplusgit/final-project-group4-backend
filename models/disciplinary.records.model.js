@@ -1,11 +1,21 @@
 const mongoose = require("mongoose");
 
-const disciplinaryRecordSchema = new mongoose.Schema({
-  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher" },
-  studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
-  remarks: String,
-  severity:  { type: Number, required: true },
-  date:  { type: Date, required: true }
-}, { timestamps: true, collection: "disciplinary_records" });
+const disciplinaryRecordSchema = new mongoose.Schema(
+  {
+    teachers_id: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher" },
+    student_number: { type: String, required: true},
+    remarks: { type: String },
+    severity: { type: Number, required: true, min: 1, max: 5 },
+    date: { type: Date, required: true },
+    sanction: { type: String, required: true},
+    violation: { type: String, required: true },
+  },
+  { timestamps: true,
+    collection: "disciplinary-records"
+  }
+);
 
-module.exports = mongoose.model("Disciplinary Records", disciplinaryRecordSchema);
+module.exports = mongoose.model(
+  "DisciplinaryRecord",
+  disciplinaryRecordSchema
+);
