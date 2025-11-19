@@ -34,16 +34,26 @@ const disciplinaryPopulate = [
 ];
 
 // ✅ Get all disciplinary records
+// GET ALL RECORDS — OR FILTER BY STUDENT NUMBER
 const getRecords = async (req, res) => {
   try {
-    const records = await DisciplinaryRecord.find({})
+    const { student } = req.query;  // ← NEW: ?student=2025848281
+
+    // Build query
+    const query = student ? { student_number: student } : {};
+
+    const records = await DisciplinaryRecord.find(query)
       .populate(disciplinaryPopulate)
-      .lean(); // plain objects
+      .lean()
+      .sort({ date: -1 }); // newest first
 
     const formatted = records.map(formatRecord);
 
     res.status(200).json({
-      message: "Disciplinary records retrieved successfully!",
+      message: student 
+        ? "Your disciplinary records retrieved successfully" 
+        : "All disciplinary records retrieved",
+      count: formatted.length,
       data: formatted,
     });
   } catch (error) {
@@ -80,63 +90,76 @@ const getRecord = async (req, res) => {
 };
 
 // ✅ Create a new record
+// ✅ Create a new record
 const createRecord = async (req, res) => {
   try {
-    const {
+    let {
       teachers_id,
       student_number,
-      remarks,
-      severity,
-      date,
-      sanction,
       violation,
+      sanction,
+      severity,
+      remarks = "",
+      date = new Date().toISOString(),
     } = req.body;
 
-    // Required fields
-    if (
-      !teachers_id ||
-      !student_number ||
-      !remarks ||
-      !severity ||
-      !date ||
-      !sanction ||
-      !violation
-    ) {
+    console.log("CREATE /disciplinary BODY:", req.body);
+
+    // Normalize & trim
+    student_number = (student_number ?? "").toString().trim();
+    violation = (violation ?? "").trim();
+    sanction = (sanction ?? "").trim();
+    remarks = (remarks ?? "").trim();
+
+    // Convert severity safely
+    severity = Number(severity);
+    if (isNaN(severity) || severity < 1 || severity > 5) {
+      return res.status(400).json({ message: "Severity must be 1–5" });
+    }
+
+    // REQUIRED FIELDS (except teacher)
+    if (!student_number || !violation || !sanction) {
       return res.status(400).json({ message: "Incomplete fields." });
     }
 
-    if (severity < 1 || severity > 5) {
-      return res.status(400).json({
-        message: "Severity must be between 1 and 5.",
-      });
+    // Teacher must be present separately
+    if (!teachers_id) {
+      return res.status(400).json({ message: "Missing teacher ID." });
     }
 
-    // NOTE: here teachers_id must already be a Teacher._id
-    // (your patch script + AddDisciplinaryModal handle this mapping)
+    // Auto-convert teacher (Account ID → Teacher ID)
+    let teacherDoc = await Teacher.findOne({ account_ref: teachers_id });
+    if (!teacherDoc) {
+      teacherDoc = await Teacher.findById(teachers_id);
+      if (!teacherDoc) {
+        return res.status(400).json({ message: "Invalid teacher" });
+      }
+    }
 
     const record = await DisciplinaryRecord.create({
-      teachers_id,
+      teachers_id: teacherDoc._id,
       student_number,
-      remarks,
-      severity,
-      date,
-      sanction,
       violation,
+      sanction,
+      severity,
+      remarks,
+      date,
     });
 
-    const populated = await record
+    const populated = await DisciplinaryRecord.findById(record._id)
       .populate(disciplinaryPopulate)
-      .then((doc) => doc.toObject());
+      .lean();
 
     res.status(201).json({
-      message: "New disciplinary record created successfully!",
+      message: "Record created successfully!",
       data: formatRecord(populated),
     });
   } catch (error) {
-    console.error("Error creating record:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Create record error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ✅ Edit record
 const editRecord = async (req, res) => {
@@ -159,7 +182,6 @@ const editRecord = async (req, res) => {
     if (
       !teachers_id ||
       !student_number ||
-      !remarks ||
       !severity ||
       !date ||
       !sanction ||

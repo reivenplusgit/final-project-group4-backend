@@ -45,7 +45,7 @@ const mapping = {
       }
 
       if (modified) {
-        await record.save({ validateBeforeSave: false });
+        await record.save();
         console.log(`Saved changes to record ${record._id}`);
       }
     }
