@@ -14,18 +14,41 @@ exports.getAll = async (req, res, next) => {
   try {
     const accounts = await Account.find().sort({ date_created: -1 }).lean();
 
-    // Fetch teachers
+    const students = await Student.find().lean();
     const teachers = await Teacher.find().lean();
+    const admins = await Admin.find().lean();
 
-    // Map teacher departments back into accounts
     const enhanced = accounts.map(acc => {
+      // 🔥 Merge Student fields
+      if (acc.user_type === "Student") {
+        const stu = students.find(s => s.accounts_ref.toString() === acc._id.toString());
+        return {
+          ...acc,
+          ...stu,  // merge all student fields here
+        };
+      }
+
+      // 🔥 Merge Teacher fields
       if (acc.user_type === "Teacher") {
         const t = teachers.find(t => t.account_ref.toString() === acc._id.toString());
         return {
           ...acc,
-          teacher_departments: t?.departments || []
+          teacher_uid: t?.teacher_uid || "",
+          teacher_department: t?.departments?.[0] || "",
+          teacher_departments: t?.departments || [],
         };
       }
+
+      // 🔥 Merge Admin fields
+      if (acc.user_type === "Admin") {
+        const ad = admins.find(a => a.accounts_ref.toString() === acc._id.toString());
+        return {
+          ...acc,
+          admin_id: ad?.admin_id || "",
+          admin_level: ad?.admin_level || "",
+        };
+      }
+
       return acc;
     });
 
@@ -34,6 +57,7 @@ exports.getAll = async (req, res, next) => {
     next(err);
   }
 };
+
 
 
 exports.getOne = async (req, res, next) => {
