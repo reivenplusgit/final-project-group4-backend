@@ -65,7 +65,9 @@ app.use("/api/admins", adminRoutes);
 app.use("/api/grades", gradeRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/students", studentRoutes);
-app.use("/api/disciplinary", disciplinaryRoutes);
 app.use("/api/reports", reportRoutes);
-// Error handler (always last)
+app.use("/api/disciplinary", disciplinaryRoutes);
+
+
+// Error handler (always last to run)
 app.use(errorHandler);

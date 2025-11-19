@@ -380,4 +380,4 @@ const addStudent = async (req, res) => {
 
 
 
-module.exports = { getSchedules, getScheduleByStudent, createSchedule, addScheduleEntry, updateScheduleEntry, assignTeacher, deleteScheduleEntries, addStudent, getStudentsBySubjAndTeacherID}; // WJG: added new exports
+module.exports = { getSchedules, getStudentsBySubjAndTeacherID, getScheduleByStudent, createSchedule, addScheduleEntry, updateScheduleEntry, assignTeacher, deleteScheduleEntries, addStudent}; // WJG: added new exports
