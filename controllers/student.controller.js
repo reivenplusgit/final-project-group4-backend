@@ -1,7 +1,7 @@
 const Student = require("../models/student.model");
 const mongoose = require("mongoose");
 
-const populateFields = "firstname lastname email photo department user_type";
+const populateFields = "firstname lastname email photo department user_type date_created";
 
 const populate = { path: "accounts_ref", select: populateFields };
 
