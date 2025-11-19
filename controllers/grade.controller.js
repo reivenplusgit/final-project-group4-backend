@@ -6,13 +6,43 @@ const Student = require("../models/student.model");
 const Account = require("../models/account.model");
 
 // GET GRADES (FILTER BY student_ref)
+// GET GRADES (FILTER BY student_ref or student_number)
+// GET GRADES (FILTER BY student_ref, can accept studentId or student_number)
 const getGrades = async (req, res) => {
   try {
-    const { studentId } = req.query;
+    const { studentId, student, studentNumber } = req.query;
 
-    let query = {};
+    const query = {};
+
+    // Decide how to resolve student_ref (ObjectId)
+    let studentRefId = null;
+
+    // 1) Directly via ?studentId=<ObjectId>
     if (studentId && mongoose.Types.ObjectId.isValid(studentId)) {
-      query.student_ref = studentId;
+      studentRefId = studentId;
+    } else if (student || studentNumber) {
+      // 2) Via student number (?student= / ?studentNumber=)
+      const studNo = student || studentNumber;
+
+      const studentDoc = await Student.findOne({
+        student_number: studNo,
+      }).select("_id student_number");
+
+      // If no student found for that number, just return empty list
+      if (!studentDoc) {
+        return res.status(200).json({
+          message: "No grades found for this student",
+          count: 0,
+          data: [],
+        });
+      }
+
+      studentRefId = studentDoc._id;
+    }
+
+    // Apply filter if we resolved a student_ref
+    if (studentRefId) {
+      query.student_ref = studentRefId;
     }
 
     const grades = await Grade.find(query)
@@ -261,109 +291,56 @@ const getStudentsByTeacherAndSubject = async (req, res) => {
   }
 };
 
-// UPDATE ONE STUDENT'S GRADE (based on student_ref)
-// UPDATE ONE STUDENT'S GRADE (based on student_ref)
-const updateStudentGrade = async (req, res) => {
+// UPDATE ONE GRADE ENTRY (teacher edits a student's grade for a specific subject)
+const updateStudentGradeBySubject = async (req, res) => {
   try {
-    const { studentRef, subjectId } = req.params;
+    const { student_number, subjectId } = req.params;
+    const { teacher_ref, percent } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(studentRef)) {
-      return res.status(400).json({ message: "Invalid studentRef" });
+    if (!mongoose.Types.ObjectId.isValid(subjectId)) {
+      return res.status(400).json({ message: "Invalid subjectId" });
     }
-
-    // Safe extraction
-    let percent = undefined;
-    let teacher_ref = undefined;
-
-    // 1. Direct
-    if (req.body.percent !== undefined) {
-      percent = req.body.percent;
-    }
-    if (req.body.teacher_ref) {
-      teacher_ref = req.body.teacher_ref;
-    }
-
-    // 2. Nested under grade
-    if (percent === undefined && req.body.grade) {
-      percent = req.body.grade.percent;
-    }
-    if (!teacher_ref && req.body.grade) {
-      teacher_ref = req.body.grade.teacher_ref;
-    }
-
-    // 3. Nested under data
-    if (percent === undefined && req.body.data) {
-      percent = req.body.data.percent;
-    }
-    if (!teacher_ref && req.body.data) {
-      teacher_ref = req.body.data.teacher_ref;
-    }
-
-    // 4. Inside grades[0]
-    if (
-      percent === undefined &&
-      Array.isArray(req.body.grades) &&
-      req.body.grades[0]
-    ) {
-      percent = req.body.grades[0].percent;
-    }
-    if (
-      !teacher_ref &&
-      Array.isArray(req.body.grades) &&
-      req.body.grades[0]
-    ) {
-      teacher_ref = req.body.grades[0].teacher_ref;
-    }
-
-    // Final validation
-    if (percent === undefined || !teacher_ref) {
-      return res.status(400).json({
-        message: "Missing required fields: percent and teacher_ref",
-      });
-    }
-
     if (!mongoose.Types.ObjectId.isValid(teacher_ref)) {
       return res.status(400).json({ message: "Invalid teacher_ref" });
     }
 
-    const gradeRecord = await Grade.findOne({ student_ref: studentRef });
+    // 1) Find the student's grade record
+    const gradeDoc = await Grade.findOne({ student_number });
 
-    if (!gradeRecord) {
+    if (!gradeDoc) {
       return res.status(404).json({ message: "Grade record not found" });
     }
 
-    // Find existing grade entry
-    let gradeEntry = gradeRecord.grades.find(
+    // 2) Find grade entry for this subject & teacher
+    const entry = gradeDoc.grades.find(
       (g) =>
         g.subject_ref.toString() === subjectId &&
         g.teacher_ref.toString() === teacher_ref
     );
 
-    const now = new Date();
-
-    if (!gradeEntry) {
-      gradeRecord.grades.push({
-        teacher_ref,
-        subject_ref: subjectId,
-        percent,
-        graded_date: now,
+    if (!entry) {
+      return res.status(404).json({
+        message: "No grade entry found for this subject & teacher",
       });
-    } else {
-      gradeEntry.percent = percent;
-      gradeEntry.graded_date = now;
     }
 
-    await gradeRecord.save();
+    // 3) Update fields
+    entry.percent = percent;
+    entry.graded_date = new Date();
 
-    res.status(200).json({
+    // 4) Save
+    await gradeDoc.save();
+
+    return res.status(200).json({
       message: "Grade updated successfully",
-      data: gradeRecord,
+      data: gradeDoc,
     });
   } catch (error) {
-    console.error("ERROR updating student grade:", error);
+    console.error("Update Error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 module.exports = {
   getGrades,
@@ -372,5 +349,5 @@ module.exports = {
   updateGrade,
   deleteGrade,
   getStudentsByTeacherAndSubject,
-  updateStudentGrade,
+  updateStudentGradeBySubject
 };

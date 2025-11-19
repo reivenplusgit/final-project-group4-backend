@@ -4,8 +4,8 @@ const gradeController = require("../controllers/grade.controller");
 
 // MUST COME FIRST
 router.put(
-  "/student/:studentRef/subject/:subjectId",
-  gradeController.updateStudentGrade
+  "/student/:student_number/subject/:subjectId",
+  gradeController.updateStudentGradeBySubject
 );
 
 // THEN OTHER SPECIFIC ROUTES
